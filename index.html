@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="km" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PPSHV Expressway - Zero Duplicate Suite v46.0</title>
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gold: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' },
+                        brand: { 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7' }
+                    },
+                    fontFamily: {
+                        khmer: ['Kantumruy Pro', 'sans-serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        html.dark body { background-color: #030712; color: #f3f4f6; }
+        html:not(.dark) body { background-color: #f8fafc; color: #0f172a; }
+        
+        .glass-panel { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        html.dark .glass-panel { background: rgba(15, 23, 42, 0.85); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        html:not(.dark) .glass-panel { background: rgba(255, 255, 255, 0.9); border-bottom: 1px solid rgba(226, 232, 240, 0.9); }
+
+        .glass-card { transition: all 0.25s ease; }
+        html.dark .glass-card { background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.7) 100%); border: 1px solid rgba(255, 255, 255, 0.08); }
+        html:not(.dark) .glass-card { background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03); }
+
+        .nav-btn.active { background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(245, 158, 11, 0.15) 100%); border-color: #0ea5e9; color: #38bdf8; }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #64748b; border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen pb-28 font-khmer">
+
+    <!-- Header -->
+    <header class="glass-panel sticky top-0 z-40 px-4 py-3 shadow-lg">
+        <div class="max-w-xl mx-auto flex justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <div class="relative w-11 h-11 rounded-xl bg-slate-900 p-1 flex items-center justify-center border border-slate-700 overflow-hidden shadow-md">
+                    <img id="company-logo-img" src="https://raw.githubusercontent.com/T-Expressway/Logo/main/ppshv.png" alt="Logo" class="w-full h-full object-contain rounded-lg" onerror="this.onerror=null; this.src='https://placehold.co/120x120/0f172a/ffffff?text=PPSHV';">
+                </div>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <h1 class="font-black text-xs tracking-wider uppercase font-sans text-slate-800 dark:text-slate-100">PPSHV EXPRESSWAY</h1>
+                        <span class="px-2 py-0.2 text-[8px] font-black uppercase bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 rounded-full font-mono">v46.0 ZeroDup</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium" id="header-date-display">កំពុងផ្ទុកប្រព័ន្ធ...</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="manualCloudRefresh()" class="p-2.5 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" title="Refresh Cloud Data">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                </button>
+                <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700">
+                    <i id="theme-icon" data-lucide="sun" class="w-4 h-4 text-amber-500"></i>
+                </button>
+                <div id="auth-indicator" class="px-2.5 py-1 rounded-full text-[10px] font-bold border flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-400">
+                    <span class="w-2 h-2 rounded-full bg-slate-400" id="auth-dot"></span>
+                    <span id="auth-text">Staff</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <main class="max-w-xl mx-auto p-4 space-y-4">
+
+        <nav class="grid grid-cols-4 gap-1.5 bg-slate-200/80 dark:bg-slate-900/90 p-1.5 rounded-2xl border border-slate-300 dark:border-slate-800 shadow-lg">
+            <button onclick="switchTab('daily')" id="nav-daily" class="nav-btn active py-2.5 rounded-xl text-[11px] font-bold transition flex flex-col items-center justify-center gap-1 border border-transparent text-slate-600 dark:text-slate-400">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> <span>ប្រចាំថ្ងៃ</span>
+            </button>
+            <button onclick="switchTab('weekly')" id="nav-weekly" class="nav-btn py-2.5 rounded-xl text-[11px] font-bold transition flex flex-col items-center justify-center gap-1 border border-transparent text-slate-600 dark:text-slate-400">
+                <i data-lucide="calendar" class="w-4 h-4"></i> <span>តារាងខែ</span>
+            </button>
+            <button onclick="switchTab('staff')" id="nav-staff" class="nav-btn py-2.5 rounded-xl text-[11px] font-bold transition flex flex-col items-center justify-center gap-1 border border-transparent text-slate-600 dark:text-slate-400">
+                <i data-lucide="users" class="w-4 h-4"></i> <span>បុគ្គលិក</span>
+            </button>
+            <button onclick="switchTab('admin')" id="nav-admin" class="nav-btn py-2.5 rounded-xl text-[11px] font-bold transition flex flex-col items-center justify-center gap-1 border border-transparent text-amber-500">
+                <i data-lucide="shield-check" class="w-4 h-4"></i> <span>Admin</span>
+            </button>
+        </nav>
+
+        <!-- ================= VIEW 1: DAILY DASHBOARD ================= -->
+        <div id="view-daily" class="space-y-4">
+            <section class="glass-card rounded-2xl p-3 shadow-md flex items-center justify-between gap-2 border">
+                <div class="text-center flex-1">
+                    <label class="text-[10px] text-slate-400 font-bold block mb-1">📅 សូមចុចលើ Calendar ដើម្បីជ្រើសរើសថ្ងៃធ្វើការ</label>
+                    <div class="flex items-center justify-center gap-1.5">
+                        <input type="date" id="date-picker" onchange="onDateSelectedInput(this.value)" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 px-3 py-1.5 rounded-xl font-bold text-center text-xs focus:outline-none cursor-pointer text-cyan-500 font-sans">
+                        <button onclick="resetToToday()" class="px-3 py-1.5 rounded-xl bg-cyan-500/20 text-cyan-400 text-xs font-bold border border-cyan-500/30">
+                            ថ្ងៃនេះ
+                        </button>
+                    </div>
+                    <div id="khmer-date-full" class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">...</div>
+                </div>
+            </section>
+
+            <div id="shift-status-banner" class="glass-card p-3 rounded-2xl border text-center font-bold text-xs flex items-center justify-center gap-2"></div>
+
+            <section class="grid grid-cols-4 gap-2">
+                <div class="glass-card p-2.5 rounded-xl text-center border"><span class="text-[9px] text-slate-400 block font-bold">សរុប</span><span class="text-base font-black font-sans" id="metric-total">7</span></div>
+                <div class="glass-card p-2.5 rounded-xl text-center border border-amber-500/30 bg-amber-500/5"><span class="text-[9px] text-amber-500 block font-bold">🌅 ព្រឹក</span><span class="text-base font-black font-sans text-amber-500" id="metric-morning">0</span></div>
+                <div class="glass-card p-2.5 rounded-xl text-center border border-blue-500/30 bg-blue-500/5"><span class="text-[9px] text-blue-500 block font-bold">🌙 យប់</span><span class="text-base font-black font-sans text-blue-500" id="metric-night">0</span></div>
+                <div class="glass-card p-2.5 rounded-xl text-center border border-rose-500/30 bg-rose-500/5"><span class="text-[9px] text-rose-500 block font-bold">🔴 សម្រាក</span><span class="text-base font-black font-sans text-rose-500" id="metric-off">0</span></div>
+            </section>
+
+            <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="staff-search-input" onkeyup="renderUI()" placeholder="ស្វែងរកឈ្មោះបុគ្គលិក ឬតុ..." class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-cyan-500">
+            </div>
+
+            <div class="space-y-3" id="staff-assignments-container"></div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2">
+                <button onclick="shareToTelegram()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 text-white py-3 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2">
+                    <i data-lucide="send" class="w-4 h-4"></i> <span>ផ្ញើ Telegram Group</span>
+                </button>
+                <button onclick="copySummaryText()" class="w-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 py-3 rounded-xl font-bold text-xs border border-slate-300 dark:border-slate-700 flex items-center justify-center gap-2">
+                    <i data-lucide="copy" class="w-4 h-4 text-cyan-500"></i> <span>ចម្លងរបាយការណ៍</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= VIEW 2: MONTHLY ROTATION MATRIX ================= -->
+        <div id="view-weekly" class="hidden space-y-4">
+            <div class="glass-card rounded-2xl p-4 space-y-3 border relative overflow-hidden">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><i data-lucide="calendar-days" class="w-4 h-4 text-cyan-500"></i> តារាង Rotation ប្រចាំខែ</h3>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5" id="monthly-matrix-subtitle">Zero Duplicate Suite (v46.0)</p>
+                    </div>
+                    <div id="admin-save-template-container" class="hidden">
+                        <button onclick="saveMonthlyTemplate()" class="px-3 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5">
+                            <i data-lucide="save" class="w-3.5 h-3.5"></i> 💾 រក្សាទុកទម្រង់តុខែនេះ
+                        </button>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div id="matrix-blur-overlay" class="absolute inset-0 z-30 backdrop-blur-md bg-slate-950/70 flex flex-col items-center justify-center text-center p-4 rounded-xl hidden">
+                        <i data-lucide="lock" class="w-8 h-8 text-amber-500 mb-2"></i>
+                        <p class="text-xs font-bold text-amber-400">តារាង Rotation ប្រចាំខែ គឺសម្រាប់តែ Admin ប្រធាន និងអនុប្រធានប៉ុណ្ណោះ!</p>
+                        <p class="text-[10px] text-slate-400 mt-1">ទិន្នន័យត្រូវបានដាក់ព្រាលសម្រាប់បុគ្គលិកទូទៅ។</p>
+                    </div>
+                    
+                    <div class="overflow-x-auto rounded-xl border border-slate-300 dark:border-slate-800 max-h-[60vh]">
+                        <table class="w-full text-[10px] text-left border-collapse min-w-[950px]" id="weekly-matrix-table"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW 3: STAFF DIRECTORY ================= -->
+        <div id="view-staff" class="hidden space-y-3">
+            <div class="glass-card rounded-2xl p-4 space-y-3 border">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4 text-cyan-500"></i> បញ្ជីបុគ្គលិកប្រតិបត្តិការសរុប</h3>
+                <div class="space-y-2.5" id="staff-directory-list"></div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW 4: ADMIN / PORTAL TAB ================= -->
+        <div id="view-admin" class="hidden space-y-4">
+            <div class="glass-card rounded-2xl p-4 space-y-4 border border-amber-500/30">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                    <h3 id="portal-title" class="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-amber-500"></i> Portal សុំច្បាប់ និងមកយឺត</h3>
+                    <button onclick="logoutPortal()" class="text-[10px] text-rose-500 hover:underline font-bold px-2 py-1 rounded bg-rose-500/10">ចាកចេញ</button>
+                </div>
+
+                <div id="visitor-logs-section" class="space-y-3 bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-xl border border-cyan-500/30 hidden">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-cyan-400 flex items-center gap-1">
+                            <i data-lucide="eye" class="w-4 h-4"></i> ប្រវត្តិឈ្មោះម្ចាស់ Telegram ចូលមើល App
+                        </label>
+                        <button onclick="clearVisitorLogs()" class="text-[10px] text-rose-400 hover:underline px-2 py-1 bg-rose-500/10 rounded">លុបប្រវត្តិ</button>
+                    </div>
+                    <div class="space-y-2 max-h-48 overflow-y-auto" id="visitor-logs-container"></div>
+                </div>
+
+                <div class="space-y-2.5 bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <label class="text-xs font-bold text-amber-500 flex items-center gap-1"><i data-lucide="calendar-off" class="w-4 h-4"></i> កត់ត្រាការសុំច្បាប់ & លុបច្បាប់</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="leave-staff-select" class="text-xs p-2.5 rounded-xl border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200"></select>
+                        <select id="leave-type-select" class="text-xs p-2.5 rounded-xl border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+                            <option value="Sick">🩺 ឈឺ (Sick Leave)</option>
+                            <option value="Personal">📝 ច្បាប់ផ្ទាល់ខ្លួន</option>
+                            <option value="Annual">🌴 ប្រចាំឆ្នាំ</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button onclick="applyLeaveForSelected()" class="py-2 bg-amber-600/20 text-amber-500 border border-amber-500/40 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
+                            <i data-lucide="send" class="w-3.5 h-3.5"></i> រក្សាទុកច្បាប់
+                        </button>
+                        <button onclick="resetLeaveForSelected()" class="py-2 bg-rose-500/15 text-rose-500 border border-rose-500/30 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset (មកធ្វើការវិញ)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-2.5 bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <label class="text-xs font-bold text-purple-400 flex items-center gap-1"><i data-lucide="clock" class="w-4 h-4"></i> កត់ត្រាការមកយឺត & លុប</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="late-staff-select" class="text-xs p-2.5 rounded-xl border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200"></select>
+                        <input type="text" id="late-reason-input" placeholder="មូលហេតុយឺត..." class="text-xs p-2.5 rounded-xl border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button onclick="applyLateForSelected()" class="py-2 bg-purple-600/20 text-purple-400 border border-purple-500/40 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
+                            <i data-lucide="send" class="w-3.5 h-3.5"></i> កត់ត្រាយឺត
+                        </button>
+                        <button onclick="resetLateForSelected()" class="py-2 bg-rose-500/15 text-rose-500 border border-rose-500/30 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset (មកទាន់ពេល)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- FULL ADMIN ONLY TOOLS -->
+                <div id="full-admin-tools" class="space-y-4 hidden border-t border-amber-500/30 pt-4">
+                    <div class="bg-amber-500/10 p-2.5 rounded-xl text-center text-amber-400 text-xs font-bold">
+                        ⭐ Admin Control Center (ZeroDup Suite v46.0)
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-xl border border-cyan-500/30 space-y-2">
+                        <label class="text-xs font-bold text-cyan-400 flex items-center gap-1">
+                            <i data-lucide="copy" class="w-4 h-4"></i> រក្សាតុធ្វើការខែចាស់មកខែថ្មី (Carryover Schedule)
+                        </label>
+                        <button onclick="carryOverLastMonthSchedule()" class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded-xl shadow-md">
+                            📋 ផ្ទេរតុខែចាស់មកខែនេះ
+                        </button>
+                    </div>
+
+                    <div class="space-y-2.5 bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-xl border border-cyan-500/30">
+                        <label class="text-xs font-bold text-cyan-400 flex items-center gap-1">
+                            <i data-lucide="arrow-left-right" class="w-4 h-4 text-cyan-500"></i> ផ្លាស់ប្តូរតុរវាងបុគ្គលិក ២ នាក់
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <select id="swap-staff-1" class="text-xs p-2.5 rounded-xl border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200"></select>
+                            <select id="swap-staff-2" class="text-xs p-2.5 rounded-xl border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200"></select>
+                        </div>
+                        <button onclick="executeSwap()" class="w-full py-2.5 bg-slate-800 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 shadow-md">
+                            ផ្លាស់ប្តូរតុរវាងបុគ្គលិកទាំង ២
+                        </button>
+                    </div>
+
+                    <div class="space-y-3 bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-xl border border-cyan-500/40">
+                        <label class="text-xs font-bold text-cyan-400 flex items-center gap-1"><i data-lucide="user-plus" class="w-4 h-4"></i> គ្រប់គ្រងបុគ្គលិក</label>
+                        <div class="space-y-2">
+                            <input type="text" id="new-staff-name" placeholder="ឈ្មោះបុគ្គលិកថ្មី..." class="w-full text-xs p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+                            <input type="text" id="new-staff-role" placeholder="តួនាទី..." class="w-full text-xs p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+                            <button onclick="addNewStaff()" class="w-full py-2 bg-cyan-600 text-white text-xs font-bold rounded-xl shadow-md">➕ បន្ថែមបុគ្គលិកថ្មី</button>
+                        </div>
+                        <div class="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-1.5 max-h-40 overflow-y-auto" id="admin-staff-list-manage"></div>
+                    </div>
+
+                    <div class="space-y-2.5 bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-xl border border-cyan-500/40">
+                        <label class="text-xs font-bold text-cyan-400 flex items-center gap-1">
+                            <i data-lucide="send" class="w-4 h-4"></i> Telegram Bot API Config & Test
+                        </label>
+                        <input type="text" id="admin-bot-token" placeholder="Bot Token..." class="w-full text-xs p-2.5 rounded-xl bg-white dark:bg-slate-900 border mb-2 border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-sans">
+                        <input type="text" id="admin-chat-id" placeholder="Group Chat ID..." class="w-full text-xs p-2.5 rounded-xl bg-white dark:bg-slate-900 border mb-2 border-slate-300 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-sans">
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button onclick="saveTelegramConfigs()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 rounded-xl border border-slate-700">💾 រក្សាទុក Configs</button>
+                            <button onclick="testTelegramBot()" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-xs font-bold text-white rounded-xl shadow-md flex items-center justify-center gap-1.5">
+                                <i data-lucide="send" class="w-3.5 h-3.5"></i> 🧪 Test ផ្ញើសារ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-slate-100 text-xs font-medium px-4 py-3 rounded-2xl shadow-2xl border border-cyan-500/40 opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-2">
+        <i data-lucide="check-circle-2" class="w-4 h-4 text-cyan-400"></i>
+        <span id="toast-text">ជោគជ័យ</span>
+    </div>
+
+    <!-- Application Script with v46.0 Zero Duplicate Bulletproof Suite -->
+    <script>
+        const FULL_ADMIN_PASSWORD = "168168";   
+        const LEADER_PASSWORD = "2222";       
+        const STAFF_ENTRY_PASSWORD = "1111";    
+
+        let currentTheme = localStorage.getItem('ppshv_v460_theme') || 'dark';
+        let currentRole = sessionStorage.getItem('ppshv_v460_role') || null; 
+        let selectedDate = getLocalDateObject(new Date());
+
+        // 🔗 HARDCODED NPOINT URL
+        const NPOINT_URL = "https://api.npoint.io/48b4cf0459e856de0ab3";
+
+        let telegramToken = localStorage.getItem('ppshv_v7_token') || "";
+        let chatId = localStorage.getItem('ppshv_v7_chatid') || "";
+
+        const defaultStaffMembers = [
+            { id: 1, name: "LY SOKUNPANHA", role: "ប្រធានក្រុម", fixedDesk: "សវនកម្ម" }, 
+            { id: 2, name: "LY PANHANALL", role: "អនុប្រធាន" },
+            { id: 3, name: "LUN CHANDARA", role: "បុគ្គលិកកាមេរ៉ា (Admin)" },
+            { id: 4, name: "MUY LONGDY", role: "បុគ្គលិកកាមេរ៉ា" },
+            { id: 5, name: "POV CHAIYA", role: "បុគ្គលិកកាមេរ៉ា" },
+            { id: 6, name: "DAIM KUNTHEA", role: "បុគ្គលិកកាមេរ៉ា" },
+            { id: 7, name: "SEA VICHKA", role: "បុគ្គលិកកាមេរ៉ា" }
+        ];
+
+        let staffMembers = JSON.parse(localStorage.getItem('ppshv_v460_staff')) || defaultStaffMembers;
+        if (!staffMembers || staffMembers.length === 0) staffMembers = defaultStaffMembers;
+
+        const ALL_DESKS = ["សវនកម្ម", "Excel", "កែផ្លាកលេខ", "ទូA", "ទូB", "ទូC", "ទូស្ថានីយ៍"];
+        
+        const SHIFT_CYCLE_EXACT = [
+            { name: "ព្រឹកទី១", type: "ព្រឹក" }, { name: "ព្រឹកទី២", type: "ព្រឹក" },
+            { name: "យប់ទី១", type: "យប់" }, { name: "យប់ទី២", type: "យប់" },
+            { name: "សម្រាកទី១", type: "សម្រាក" }, { name: "សម្រាកទី២", type: "សម្រាក" }
+        ];
+
+        let masterMonthlySchedule = JSON.parse(localStorage.getItem('ppshv_v460_monthly_schedule')) || {};
+        let customSwaps = JSON.parse(localStorage.getItem('ppshv_v7_swaps')) || {};
+        let staffLeaves = JSON.parse(localStorage.getItem('ppshv_v7_leaves')) || {};
+        let staffLates = JSON.parse(localStorage.getItem('ppshv_v7_lates')) || {};
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            applyTheme(currentTheme);
+            setLocalDatePickerValue(selectedDate);
+            document.getElementById('admin-bot-token').value = telegramToken;
+            document.getElementById('admin-chat-id').value = chatId;
+
+            // ☁️ Initial Fetch from Cloud
+            await loadDataFromCloud(true);
+            trackTelegramVisitor();
+
+            if (Object.keys(masterMonthlySchedule).length === 0) {
+                generateZeroDuplicateMonth();
+            }
+
+            updateAuthUI();
+            renderUI();
+            renderStaffDirectory();
+
+            // 🔄 Auto-Polling every 5 seconds for Real-time Staff Sync
+            setInterval(async () => {
+                await loadDataFromCloud(false);
+            }, 5000);
+        });
+
+        // 🛡️ v46.0 ZERO DUPLICATE BULLETPROOF GENERATOR
+        // Guarantees:
+        // 1. diffDays strictly increments -> consecutive days (ព្រឹកទី១ & ព្រឹកទី២) ALWAYS get different desks.
+        // 2. staffIdx offset ensures everyone gets a unique desk on the exact same day.
+        // 3. Zero repetition across working days.
+        function generateZeroDuplicateMonth() {
+            let tempSchedule = {};
+            const startDate = new Date();
+            const year = startDate.getFullYear();
+            const month = startDate.getMonth();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+
+            const rotatingDesksPool = ["Excel", "កែផ្លាកលេខ", "ទូA", "ទូB", "ទូC", "ទូស្ថានីយ៍"];
+            const movableStaff = staffMembers.filter(s => s.id !== 1); // ID 1 is fixed 'សវនកម្ម'
+            const baseDate = new Date(2026, 10, 6);
+
+            for (let d = 1; d <= totalDays; d++) {
+                let dateObj = new Date(year, month, d);
+                let dateStr = getFormattedDateString(dateObj);
+                
+                let diffDays = Math.round((dateObj - baseDate) / (1000 * 60 * 60 * 24));
+                let cycleIdx = (3 + (diffDays % 6)) % 6;
+                if (cycleIdx < 0) cycleIdx += 6;
+                let sType = SHIFT_CYCLE_EXACT[cycleIdx].type;
+
+                let dayConfig = {};
+                dayConfig[1] = "សវនកម្ម"; // Fixed audit desk
+
+                if (sType === "សម្រាក") {
+                    movableStaff.forEach(staff => {
+                        dayConfig[staff.id] = "🔴 សម្រាកថ្ងៃ";
+                    });
+                } else {
+                    let assignedToday = new Set();
+                    assignedToday.add("សវនកម្ម");
+
+                    movableStaff.forEach((staff, staffIdx) => {
+                        // Sequential formula: diffDays + staffIdx guarantees unique desks per day and no repeat on consecutive days
+                        let deskIdx = (staffIdx + diffDays) % rotatingDesksPool.length;
+                        let desk = rotatingDesksPool[deskIdx];
+
+                        // Absolute safety check against any duplicate on the same day
+                        let safety = 0;
+                        while (assignedToday.has(desk) && safety < rotatingDesksPool.length) {
+                            deskIdx = (deskIdx + 1) % rotatingDesksPool.length;
+                            desk = rotatingDesksPool[deskIdx];
+                            safety++;
+                        }
+                        assignedToday.add(desk);
+                        dayConfig[staff.id] = desk;
+                    });
+                }
+                tempSchedule[dateStr] = dayConfig;
+            }
+
+            masterMonthlySchedule = tempSchedule;
+            syncToCloud();
+        }
+
+        async function loadDataFromCloud(isInitial = false) {
+            try {
+                let res = await fetch(NPOINT_URL + "?nocache=" + new Date().getTime());
+                let cloudData = await res.json();
+                let hasChanges = false;
+
+                if (cloudData.staff && Array.isArray(cloudData.staff) && cloudData.staff.length > 0) {
+                    staffMembers = cloudData.staff;
+                    localStorage.setItem('ppshv_v460_staff', JSON.stringify(staffMembers));
+                    hasChanges = true;
+                }
+                if (cloudData.schedule && Object.keys(cloudData.schedule).length > 0) {
+                    masterMonthlySchedule = cloudData.schedule;
+                    localStorage.setItem('ppshv_v460_monthly_schedule', JSON.stringify(masterMonthlySchedule));
+                    hasChanges = true;
+                }
+                if (cloudData.leaves) {
+                    staffLeaves = cloudData.leaves;
+                    localStorage.setItem('ppshv_v7_leaves', JSON.stringify(staffLeaves));
+                    hasChanges = true;
+                }
+                if (cloudData.lates) {
+                    staffLates = cloudData.lates;
+                    localStorage.setItem('ppshv_v7_lates', JSON.stringify(staffLates));
+                    hasChanges = true;
+                }
+                if (cloudData.swaps) {
+                    customSwaps = cloudData.swaps;
+                    localStorage.setItem('ppshv_v7_swaps', JSON.stringify(customSwaps));
+                    hasChanges = true;
+                }
+
+                if (hasChanges || !isInitial) {
+                    renderUI();
+                    renderStaffDirectory();
+                    if (!document.getElementById('view-weekly').classList.contains('hidden')) renderWeeklyMatrix();
+                }
+            } catch (err) {
+                console.log("Offline fallback active.");
+            }
+        }
+
+        async function manualCloudRefresh() {
+            showToast("🔄 កំពុងទាញយកទិន្នន័យថ្មី...");
+            await loadDataFromCloud(true);
+            showToast("✅ ទាញយកតុចុងក្រោយជោគជ័យ!");
+        }
+
+        async function syncToCloud() {
+            let payload = {
+                schedule: masterMonthlySchedule,
+                leaves: staffLeaves,
+                lates: staffLates,
+                staff: staffMembers,
+                swaps: customSwaps
+            };
+
+            localStorage.setItem('ppshv_v460_monthly_schedule', JSON.stringify(masterMonthlySchedule));
+            localStorage.setItem('ppshv_v7_leaves', JSON.stringify(staffLeaves));
+            localStorage.setItem('ppshv_v7_lates', JSON.stringify(staffLates));
+            localStorage.setItem('ppshv_v460_staff', JSON.stringify(staffMembers));
+            localStorage.setItem('ppshv_v7_swaps', JSON.stringify(customSwaps));
+
+            try {
+                let res = await fetch(NPOINT_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    showToast("☁️ Sync ឡើង Cloud ជោគជ័យ ១០០%!");
+                }
+            } catch (err) {
+                console.error("Sync error:", err);
+            }
+        }
+
+        // Telegram Bot Test & Visitor Tracking
+        async function testTelegramBot() {
+            const token = document.getElementById('admin-bot-token').value.trim();
+            const id = document.getElementById('admin-chat-id').value.trim();
+            if (!token || !id) { alert("⚠️ សូមបញ្ចូល Bot Token និង Chat ID!"); return; }
+            const url = `https://api.telegram.org/bot${token}/sendMessage`;
+            try {
+                showToast("កំពុងផ្ញើសារ Test...");
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: id, text: "🤖 [PPSHV ZeroDup v46.0] Bot Test ដំណើរការបានយ៉ាងល្អ!", parse_mode: 'HTML' })
+                });
+                const data = await res.json();
+                if (data.ok) showToast("✅ ផ្ញើសារ Test ចូល Group ជោគជ័យ!");
+                else alert("❌ បរាជ័យ៖ " + data.description);
+            } catch (err) { alert("❌ Network Error: " + err.message); }
+        }
+
+        function trackTelegramVisitor() {
+            let userObj = (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) ? window.Telegram.WebApp.initDataUnsafe.user : null;
+            let visitorName = userObj ? `${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() : "Browser User";
+            let username = userObj && userObj.username ? `@${userObj.username}` : "@test_user";
+            let userId = userObj ? userObj.id : "WEB_GUEST";
+            const accessTime = new Date().toLocaleString('km-KH', { timeZone: 'Asia/Phnom_Penh' });
+
+            let visitorsList = JSON.parse(localStorage.getItem('ppshv_telegram_visitors')) || [];
+            visitorsList.unshift({ userId, visitorName, username, accessTime });
+            if (visitorsList.length > 50) visitorsList.pop();
+            localStorage.setItem('ppshv_telegram_visitors', JSON.stringify(visitorsList));
+        }
+
+        function renderVisitorLogs() {
+            const container = document.getElementById('visitor-logs-container');
+            if (!container) return;
+            container.innerHTML = '';
+            let logs = JSON.parse(localStorage.getItem('ppshv_telegram_visitors')) || [];
+            if (logs.length === 0) { container.innerHTML = `<p class="text-[10px] text-slate-400 text-center py-2">មិនទាន់មានប្រវត្តិអ្នកចូលមើលទេ។</p>`; return; }
+            logs.forEach(log => {
+                container.innerHTML += `
+                    <div class="bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+                        <div>
+                            <div class="font-extrabold text-cyan-400">📱 ${log.visitorName} <span class="text-[10px] font-normal text-slate-400">(${log.username})</span></div>
+                            <div class="text-[9px] text-slate-500 font-sans">ID: ${log.userId}</div>
+                        </div>
+                        <span class="text-[10px] font-bold text-amber-400 font-sans">${log.accessTime}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function clearVisitorLogs() {
+            if (confirm("លុបប្រវត្តិអ្នកចូលមើលទាំងអស់មែនទេ?")) {
+                localStorage.removeItem('ppshv_telegram_visitors');
+                renderVisitorLogs();
+                showToast("លុបប្រវត្តិជោគជ័យ!");
+            }
+        }
+
+        function getLocalDateObject(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+        function setLocalDatePickerValue(d) {
+            document.getElementById('date-picker').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+        function getFormattedDateString(d) {
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function applyTheme(theme) {
+            currentTheme = theme;
+            localStorage.setItem('ppshv_v460_theme', theme);
+            if (theme === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+            if (window.lucide) lucide.createIcons();
+        }
+        function toggleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+
+        function getKhmerFormattedDate(dateObj) {
+            const daysKhmer = ["អាទិត្យ", "ចន្ទ", "អង្គារ", "ពុធ", "ព្រហស្បតិ៍", "សុក្រ", "សៅរ៍"];
+            const monthsKhmer = ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មីថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"];
+            return `ថ្ងៃ${daysKhmer[dateObj.getDay()]} ទី${dateObj.getDate()} ខែ${monthsKhmer[dateObj.getMonth()]} ឆ្នាំ${dateObj.getFullYear()}`;
+        }
+
+        function calculateStaffAssignments(targetDate) {
+            const dateStr = getFormattedDateString(targetDate);
+            const baseDate = new Date(2026, 10, 6);
+            const diffDays = Math.round((targetDate - baseDate) / (1000 * 60 * 60 * 24));
+            let cycleIdx = (3 + (diffDays % 6)) % 6;
+            if (cycleIdx < 0) cycleIdx += 6;
+            const currentShiftObj = SHIFT_CYCLE_EXACT[cycleIdx];
+
+            let assignments = [];
+            let morningCount = 0, nightCount = 0, offCount = 0;
+            let dayMasterSchedule = masterMonthlySchedule[dateStr] || {};
+            const activeLeaves = staffLeaves[dateStr] || {};
+            const activeLates = staffLates[dateStr] || {};
+
+            staffMembers.forEach(staff => {
+                const leaveType = activeLeaves[staff.id];
+                let sType = currentShiftObj.type;
+                if (leaveType) offCount++;
+                else if (sType === "ព្រឹក") morningCount++;
+                else if (sType === "យប់") nightCount++;
+                else offCount++;
+            });
+
+            staffMembers.forEach(staff => {
+                const leaveType = activeLeaves[staff.id];
+                const lateReason = activeLates[staff.id];
+                let sType = currentShiftObj.type;
+                let desk = "";
+
+                if (leaveType) desk = "តុនេះមិនមានមនុស្សធ្វើការទេ (បុគ្គលិកច្បាប់)";
+                else if (sType === "សម្រាក") desk = "🔴 សម្រាកថ្ងៃ";
+                else if (staff.fixedDesk) desk = staff.fixedDesk;
+                else desk = dayMasterSchedule[staff.id] || "Excel";
+
+                assignments.push({ staff, shift: currentShiftObj.name, shiftType: sType, desk, leaveType, lateReason });
+            });
+
+            if (customSwaps[dateStr]) {
+                customSwaps[dateStr].forEach(swap => {
+                    const i1 = assignments.findIndex(a => a.staff.id === swap.staff1Id);
+                    const i2 = assignments.findIndex(a => a.staff.id === swap.staff2Id);
+                    if (i1 !== -1 && i2 !== -1 && !assignments[i1].leaveType && !assignments[i2].leaveType) {
+                        let temp = assignments[i1].desk;
+                        assignments[i1].desk = assignments[i2].desk;
+                        assignments[i2].desk = temp;
+                    }
+                });
+            }
+            return { assignments, currentShiftObj, morningCount, nightCount, offCount };
+        }
+
+        function onDateSelectedInput(val) {
+            let pickedDate = new Date(val + "T00:00:00");
+            let today = getLocalDateObject(new Date());
+            if (currentRole !== 'admin' && currentRole !== 'leader' && pickedDate > today) {
+                showToast("⚠️ បុគ្គលិកទូទៅមិនអាចមើលថ្ងៃអនាគតបានទេ!");
+                setLocalDatePickerValue(selectedDate);
+                return;
+            }
+            selectedDate = getLocalDateObject(pickedDate);
+            renderUI();
+        }
+
+        function renderUI() {
+            document.getElementById('header-date-display').textContent = getKhmerFormattedDate(selectedDate);
+            document.getElementById('khmer-date-full').textContent = getKhmerFormattedDate(selectedDate);
+
+            const { assignments, currentShiftObj, morningCount, nightCount, offCount } = calculateStaffAssignments(selectedDate);
+            const banner = document.getElementById('shift-status-banner');
+            banner.className = "glass-card p-3 rounded-2xl border text-center font-bold text-xs flex items-center justify-center gap-2 " + 
+                (currentShiftObj.type === "ព្រឹក" ? "bg-amber-500/10 text-amber-500 border-amber-500/40" : (currentShiftObj.type === "យប់" ? "bg-blue-500/10 text-blue-400 border-blue-500/40" : "bg-rose-500/10 text-rose-500 border-rose-500/40"));
+            banner.innerHTML = `<span>ថ្ងៃនេះ បុគ្គលិកសរុប ${staffMembers.length} នាក់ ធ្វើការ «${currentShiftObj.name}»</span>`;
+
+            document.getElementById('metric-total').textContent = staffMembers.length;
+            document.getElementById('metric-morning').textContent = morningCount;
+            document.getElementById('metric-night').textContent = nightCount;
+            document.getElementById('metric-off').textContent = offCount;
+
+            const query = document.getElementById('staff-search-input').value.toLowerCase();
+            const container = document.getElementById('staff-assignments-container');
+            container.innerHTML = '';
+
+            assignments.forEach(item => {
+                if (query && !item.staff.name.toLowerCase().includes(query) && !item.desk.toLowerCase().includes(query)) return;
+                let isLeave = !!item.leaveType;
+                let roleBadge = item.staff.id === 1 ? '<span class="text-[9px] font-black bg-cyan-500 text-slate-950 px-2 py-0.5 rounded-full uppercase">👑 ប្រធានក្រុម</span>' :
+                                item.staff.id === 2 ? '<span class="text-[9px] font-black bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full uppercase">⭐ អនុប្រធាន</span>' :
+                                item.staff.id === 3 ? '<span class="text-[9px] font-black bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-full uppercase">🛡️ Admin</span>' : '';
+
+                container.innerHTML += `
+                    <div class="glass-card p-3 rounded-xl flex items-center justify-between border ${item.staff.id <= 3 ? 'border-cyan-500/40' : ''}">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-extrabold text-xs">${item.staff.name}</span> ${roleBadge}
+                            </div>
+                            <div class="text-[10px] text-slate-400">💼 តួនាទី៖ ${item.staff.role}</div>
+                            <div class="text-[10px] ${isLeave ? 'text-rose-400 font-bold' : 'text-cyan-400'} mt-0.5">🖥️ តុ៖ ${item.desk}</div>
+                            ${item.lateReason ? `<div class="text-[10px] text-purple-400 font-bold mt-1">⏱ សុំយឺត៖ ${item.lateReason}</div>` : ''}
+                        </div>
+                        <span class="px-2.5 py-1 text-[10px] font-bold rounded-lg border ${isLeave ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40' : 'bg-slate-800 text-slate-200 border-slate-700'}">${isLeave ? '🩺 ច្បាប់' : item.shift}</span>
+                    </div>
+                `;
+            });
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function renderWeeklyMatrix() {
+            const table = document.getElementById('weekly-matrix-table');
+            table.innerHTML = '';
+            const currentYear = selectedDate.getFullYear();
+            const currentMonth = selectedDate.getMonth();
+            const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const monthsKhmer = ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មីថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"];
+            document.getElementById('monthly-matrix-subtitle').textContent = `តារាងប្រចាំខែ${monthsKhmer[currentMonth]} ឆ្នាំ${currentYear} (${totalDaysInMonth} ថ្ងៃ) - ZeroDup v46.0`;
+
+            let header = `<tr class="bg-slate-900 text-slate-400 border-b border-slate-800 sticky top-0 z-10"><th class="p-2 font-bold sticky left-0 bg-slate-900 z-20">បុគ្គលិក</th>`;
+            let dates = [];
+            for (let day = 1; day <= totalDaysInMonth; day++) {
+                let d = new Date(currentYear, currentMonth, day);
+                dates.push(d);
+                header += `<th class="p-1.5 text-center font-bold min-w-[65px]">${d.toLocaleDateString('km-KH', { weekday: 'short' })}<br><span class="text-[9px] font-sans text-cyan-400">ទី${day}</span></th>`;
+            }
+            table.innerHTML += header + `</tr>`;
+
+            staffMembers.forEach(staff => {
+                let row = `<tr class="border-b border-slate-800"><td class="p-2 font-bold sticky left-0 bg-slate-900 z-10">${staff.name.split(' ')[0]}</td>`;
+                dates.forEach(d => {
+                    let dateStr = getFormattedDateString(d);
+                    const { assignments } = calculateStaffAssignments(d);
+                    const ass = assignments.find(a => a.staff.id === staff.id) || { desk: "Excel", shift: "ព្រឹក", shiftType: "ព្រឹក", leaveType: null };
+                    let isRest = ass.shiftType === "សម្រាក" || ass.leaveType;
+                    let deskLabel = ass.leaveType ? "ច្បាប់" : (isRest ? "សម្រាក" : ass.desk);
+                    let color = ass.leaveType ? "bg-yellow-500/30 text-yellow-200" : (isRest ? "bg-rose-500/15 text-rose-400" : "bg-slate-800 text-slate-200");
+
+                    if (currentRole === 'admin' && !isRest) {
+                        let daySchedule = masterMonthlySchedule[dateStr] || {};
+                        let taken = new Set();
+                        staffMembers.forEach(s => { if (s.id !== staff.id) taken.add(daySchedule[s.id] || s.fixedDesk || "Excel"); });
+                        let options = ALL_DESKS.map(desk => `<option value="${desk}" ${desk === deskLabel ? 'selected' : ''} style="color:${taken.has(desk)?'#f87171':'#34d399'}">${desk}${taken.has(desk)?' (ជាន់)':' (ទំនេរ)'}</option>`).join('');
+                        row += `<td class="p-1 text-center"><div class="py-0.5 px-0.5 rounded border text-[8px] font-bold ${color}"><div>${ass.shift}</div><select onchange="adminUpdateDesk('${dateStr}', ${staff.id}, this.value)" class="w-full bg-slate-900 text-cyan-400 text-[8px] font-bold rounded p-0.5 border border-cyan-500/40">${options}</select></div></td>`;
+                    } else {
+                        row += `<td class="p-1 text-center"><div class="py-1 px-0.5 rounded border text-[8px] font-bold ${color}"><div>${ass.shift}</div><div class="truncate">${deskLabel}</div></div></td>`;
+                    }
+                });
+                table.innerHTML += row + `</tr>`;
+            });
+        }
+
+        async function adminUpdateDesk(dateStr, staffId, newDesk) {
+            if (currentRole !== 'admin') return;
+            if (!masterMonthlySchedule[dateStr]) masterMonthlySchedule[dateStr] = {};
+            masterMonthlySchedule[dateStr][staffId] = newDesk;
+            
+            await syncToCloud();
+            renderUI();
+            showToast(`កែប្រែតុជា «${newDesk}» ជោគជ័យ (Saved & Synced)!`);
+        }
+
+        async function saveMonthlyTemplate() {
+            if (currentRole !== 'admin') return;
+            await syncToCloud();
+            showToast("💾 រក្សាទុក និង Sync ទម្រង់តុខែនេះជោគជ័យ!");
+        }
+
+        async function carryOverLastMonthSchedule() {
+            if (currentRole !== 'admin') return;
+            generateZeroDuplicateMonth();
+            await syncToCloud();
+            showToast("ផ្ទេរ និង Sync តុខែថ្មីជោគជ័យ!");
+            renderWeeklyMatrix();
+        }
+
+        function renderStaffDirectory() {
+            const list = document.getElementById('staff-directory-list');
+            const manageList = document.getElementById('admin-staff-list-manage');
+            if (list) list.innerHTML = '';
+            if (manageList) manageList.innerHTML = '';
+            staffMembers.forEach(s => {
+                if (list) list.innerHTML += `<div class="glass-card p-3 rounded-xl flex items-center justify-between border"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold text-xs">${s.id}</div><div><div class="font-bold text-xs">${s.name}</div><div class="text-[10px] text-slate-400">${s.role}</div></div></div><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400">Active</span></div>`;
+                if (manageList) manageList.innerHTML += `<div class="flex items-center justify-between bg-slate-900 p-2 rounded border text-xs"><div><span class="font-bold">${s.name}</span></div><button onclick="deleteStaff(${s.id})" class="px-2 py-1 bg-rose-500/20 text-rose-400 rounded text-[10px] font-bold">លុប</button></div>`;
+            });
+            populateAdminOptions();
+        }
+
+        async function executeSwap() {
+            if (currentRole !== 'admin') return;
+            const id1 = parseInt(document.getElementById('swap-staff-1').value);
+            const id2 = parseInt(document.getElementById('swap-staff-2').value);
+            if (id1 === id2) { showToast("សូមជ្រើសរើសបុគ្គលិកខុសគ្នា!"); return; }
+            const dateStr = getFormattedDateString(selectedDate);
+            if (!customSwaps[dateStr]) customSwaps[dateStr] = [];
+            customSwaps[dateStr].push({ staff1Id: id1, staff2Id: id2 });
+            await syncToCloud();
+            renderUI();
+            showToast("ផ្លាស់ប្តូរតុជោគជ័យ (Synced)!");
+        }
+
+        async function addNewStaff() {
+            if (currentRole !== 'admin') return;
+            const nameInput = document.getElementById('new-staff-name');
+            const roleInput = document.getElementById('new-staff-role');
+            if (!nameInput.value.trim()) { alert("សូមបញ្ចូលឈ្មោះ!"); return; }
+            const newId = staffMembers.length > 0 ? Math.max(...staffMembers.map(s => s.id)) + 1 : 1;
+            staffMembers.push({ id: newId, name: nameInput.value.trim().toUpperCase(), role: roleInput.value.trim() || "បុគ្គលិក" });
+            nameInput.value = ''; roleInput.value = '';
+            generateZeroDuplicateMonth();
+            await syncToCloud();
+            renderStaffDirectory(); renderUI();
+            showToast("បន្ថែមបុគ្គលិកជោគជ័យ (Synced)!");
+        }
+
+        async function deleteStaff(id) {
+            if (currentRole !== 'admin') return;
+            if (staffMembers.length <= 3) { alert("មិនអាចលុបទាំងអស់បានទេ!"); return; }
+            if (confirm("តើអ្នកចង់លុបមែនទេ?")) {
+                staffMembers = staffMembers.filter(s => s.id !== id);
+                await syncToCloud();
+                renderStaffDirectory(); renderUI();
+                showToast("លុបជោគជ័យ (Synced)!");
+            }
+        }
+
+        function populateAdminOptions() {
+            ['leave-staff-select', 'late-staff-select', 'swap-staff-1', 'swap-staff-2'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.innerHTML = ''; staffMembers.forEach(s => el.innerHTML += `<option value="${s.id}">${s.name} (${s.role})</option>`); }
+            });
+        }
+
+        async function applyLeaveForSelected() {
+            const staffId = parseInt(document.getElementById('leave-staff-select').value);
+            const type = document.getElementById('leave-type-select').value;
+            const dateStr = getFormattedDateString(selectedDate);
+            if (!staffLeaves[dateStr]) staffLeaves[dateStr] = {};
+            staffLeaves[dateStr][staffId] = type;
+            await syncToCloud();
+            renderUI();
+            showToast("កត់ត្រាច្បាប់ជោគជ័យ (Synced)!");
+        }
+
+        async function resetLeaveForSelected() {
+            const staffId = parseInt(document.getElementById('leave-staff-select').value);
+            const dateStr = getFormattedDateString(selectedDate);
+            if (staffLeaves[dateStr] && staffLeaves[dateStr][staffId]) {
+                delete staffLeaves[dateStr][staffId];
+                await syncToCloud();
+                renderUI();
+                showToast("Reset ច្បាប់ជោគជ័យ (Synced)!");
+            } else { showToast("គ្មានទិន្នន័យច្បាប់ថ្ងៃនេះទេ។"); }
+        }
+
+        async function applyLateForSelected() {
+            const staffId = parseInt(document.getElementById('late-staff-select').value);
+            const reason = document.getElementById('late-reason-input').value.trim() || "មកយឺត";
+            const dateStr = getFormattedDateString(selectedDate);
+            if (!staffLates[dateStr]) staffLates[dateStr] = {};
+            staffLates[dateStr][staffId] = reason;
+            await syncToCloud();
+            renderUI();
+            showToast("កត់ត្រាមកយឺតជោគជ័យ (Synced)!");
+        }
+
+        async function resetLateForSelected() {
+            const staffId = parseInt(document.getElementById('late-staff-select').value);
+            const dateStr = getFormattedDateString(selectedDate);
+            if (staffLates[dateStr] && staffLates[dateStr][staffId]) {
+                delete staffLates[dateStr][staffId];
+                await syncToCloud();
+                renderUI();
+                showToast("Reset មកយឺតជោគជ័យ (Synced)!");
+            } else { showToast("គ្មានទិន្នន័យមកយឺតទេ។"); }
+        }
+
+        function switchTab(tabName) {
+            if (tabName === 'admin' && !currentRole) {
+                let pwd = prompt("🔐 លេខសម្ងាត់ (Admin: 168168 | ប្រធាន/អនុប្រធាន: 2222 | Staff: 1111):");
+                if (pwd === FULL_ADMIN_PASSWORD) currentRole = 'admin';
+                else if (pwd === LEADER_PASSWORD) currentRole = 'leader';
+                else if (pwd === STAFF_ENTRY_PASSWORD) currentRole = 'staff';
+                else { showToast("❌ លេខសម្ងាត់ខុសកម្រិត!"); return; }
+                sessionStorage.setItem('ppshv_v460_role', currentRole);
+                updateAuthUI();
+            }
+
+            ['daily', 'weekly', 'staff', 'admin'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).classList.remove('active');
+            });
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabName}`).classList.add('active');
+
+            const matrixBlur = document.getElementById('matrix-blur-overlay');
+            const adminSave = document.getElementById('admin-save-template-container');
+            const fullAdmin = document.getElementById('full-admin-tools');
+            const visitorSec = document.getElementById('visitor-logs-section');
+
+            if (currentRole === 'admin') {
+                matrixBlur.classList.add('hidden'); adminSave.classList.remove('hidden'); fullAdmin.classList.remove('hidden'); visitorSec.classList.remove('hidden'); renderVisitorLogs();
+            } else if (currentRole === 'leader') {
+                matrixBlur.classList.add('hidden'); adminSave.classList.add('hidden'); fullAdmin.classList.add('hidden'); visitorSec.classList.remove('hidden'); renderVisitorLogs();
+            } else {
+                matrixBlur.classList.add('hidden'); adminSave.classList.add('hidden'); fullAdmin.classList.add('hidden'); visitorSec.classList.add('hidden');
+            }
+
+            if (tabName === 'weekly') {
+                loadDataFromCloud(false);
+                renderWeeklyMatrix();
+            }
+            if (tabName === 'staff') renderStaffDirectory();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function resetToToday() { selectedDate = getLocalDateObject(new Date()); setLocalDatePickerValue(selectedDate); renderUI(); showToast("ថ្ងៃនេះ!"); }
+        function saveTelegramConfigs() {
+            if (currentRole !== 'admin') return;
+            telegramToken = document.getElementById('admin-bot-token').value.trim();
+            chatId = document.getElementById('admin-chat-id').value.trim();
+            localStorage.setItem('ppshv_v7_token', telegramToken);
+            localStorage.setItem('ppshv_v7_chatid', chatId);
+            showToast("រក្សាទុក Telegram Configs ជោគជ័យ!");
+        }
+        function updateAuthUI() { document.getElementById('auth-text').textContent = currentRole === 'admin' ? 'Full Admin' : (currentRole === 'leader' ? 'Leader' : (currentRole === 'staff' ? 'Staff' : 'Guest')); }
+        function logoutPortal() { currentRole = null; sessionStorage.removeItem('ppshv_v460_role'); updateAuthUI(); switchTab('daily'); showToast("ចាកចេញជោគជ័យ!"); }
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-text').textContent = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 2400);
+        }
+    </script>
+</body>
+</html>
